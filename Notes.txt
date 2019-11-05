@@ -1,0 +1,35 @@
+Input pb :
+Hubs 
+End offices 
+Customer
+
+Problematique :
+Lier les hubs en anneau
+Lier chaque end office a un hub
+lier chaque customer a un end office
+
+Conditions :
+Nombre de liens entre hub et end office = nb de customer attaché au end office
+
+
+TODO :
+ecrire l'environnement
+	ecrire les inputs
+	ecrire les fonctions de cout diverses
+ecrire les agents (solution)
+	Comment ecrire les gene/chromosomes ?
+ecrire l'algo de recherche genetique
+	ecrire la fonction d'initialistaion de la population
+	ecrire fonction de selection
+	ecrire la fonction de croisement
+	ecrire la fonction de mutation
+	chosiir population initiale
+		sa taille, comment l'initialiser
+			+ = plus de diversité genetique
+			-  = convergence trop rapide
+			pb de minimum local
+	choisir probabilité de mutation
+	choisir crossover chance
+	ecrire la condition d'arret du probleme
+	ecrire script pour presenter les resultats de fitness function
+	ecrire le script pour presnter les resultats

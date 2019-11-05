@@ -1,3 +1,4 @@
+# coding=utf-8
 ##### IMPORTS #####
 import numpy as np
 import random
@@ -29,5 +30,10 @@ class ReseauTelecom:
 
         (x, y) = grid_size
         self.steiners = [(random.uniform(0, x), random.uniform(0, y)) for i in range(nb_steiner)]
+        self.nb_steiner = nb_steiner
+
         self.targetNodes = [(random.uniform(0, x), random.uniform(0, y)) for i in range(nb_targetNode)]
+        self.nb_target_node = nb_targetNode
+
         self.clients = [(random.uniform(0, x), random.uniform(0, y)) for i in range(nb_clients)]
+        self.nb_clients = nb_clients
