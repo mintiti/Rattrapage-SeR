@@ -37,7 +37,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="D:\Users\Minh Tri Truong\Documents\IMT\A2\Rattrapage SeR\venv"
+VIRTUAL_ENV="D:\Users\Truong Minh Tri\Documents\IMT\A2\UE SeR\Rattrapage-SeR\venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
