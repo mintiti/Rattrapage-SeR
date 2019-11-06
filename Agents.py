@@ -8,7 +8,6 @@ MUTATION_PROBABILITY = cfg['mutation_probability']
 
 
 class Solution:
-    # TODO : définir comment on veut coder les gènes, càd les attributs
     """
     Décrit une solution pour le jeu de telecom
     Attributs ;
@@ -47,10 +46,14 @@ class Solution:
         self.Z = Z
 
 
+
+
 #    def mutation(self):
-# TODO : Ecrire
+# TODO : Ecrire Ox pour le ring de steiner
+# TODO : Ecrire les operateurs de mutation des autres connections
 
 #    def croisement(self, sol1, sol2):
+
 # TODO : Ecrire
 
 
