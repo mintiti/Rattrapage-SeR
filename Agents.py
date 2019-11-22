@@ -2,6 +2,7 @@
 import random as rd
 import numpy as np
 from config import cfg
+from Environnement import ReseauTelecom
 
 ## CONSTANTS ##
 MUTATION_PROBABILITY = cfg['mutation_probability']
@@ -45,7 +46,21 @@ class Solution:
             Z[k, index] = 1
         self.Z = Z
 
-
+    @classmethod
+    def Vide(cls, environnement):
+        """
+        Créée un agent vide, sans aucune connexion
+        :param environnement:
+        :return:
+        """
+        nb_steiner = environnement.nb_steiner
+        nb_target = environnement.nb_target_node
+        nb_client = environnement.nb_clients
+        agent = cls(environnement)
+        agent.X = np.zeros((nb_target, nb_steiner))
+        agent.Y = []
+        agent.Z = np.zeros((nb_client, nb_target))
+        return agent
 
 
 #    def mutation(self):

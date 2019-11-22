@@ -36,6 +36,7 @@ def cout_steiner(reseau_telecom):
             else:
                 cout = 130 + d * 1.5
             C[i, j] = cout
+
     return C
 
 def cout_target_steiner(reseau_telecom):
@@ -60,10 +61,24 @@ def cout_target_steiner(reseau_telecom):
             else:
                 cout = 130 + d * 1.5
             C[i,j] = cout
+
     return C
 
 def bridging_costs(solution, reseau_telecom ) :
     # Calcul du nombre de links steiner - target
     nb_bridges = reseau_telecom.nb_clients + 2 * len(solution.Y)
     return nb_bridges * 41 + 82 * len(solution.Y)
+
+def cout_total(solution, reseau_telecom):
+    bridging_cost = bridging_costs(solution, reseau_telecom)
+    C_target_steienr = cout_target_steiner(reseau_telecom)
+
+
+    # Calcul du cout des connexions steinr à end office :
+    ## Pour chaque end
+    for end_office in range()
+    ## Calculer le nombre de clients connectés au end
+    ## Multiplier par le cout de la connexion end - steiner
+
+
 
