@@ -13,9 +13,10 @@
 
 # IMPORTS
 from Agents import Solution
-import Environnement
 from config import cfg
 import Cout
+from Telecom import TelecomEnv
+import display
 
 # CONSTANTS
 POPULATION_SIZE = cfg['population_size']
@@ -71,7 +72,12 @@ class Genetic:
 if __name__ == '__main__':
 
     # Initialisaton environnement
-    reseau_telecom = Environnement.ReseauTelecom()
+    reseau_telecom = TelecomEnv()
 
     # Initialisation aléatoire de la population initiale
     agents_list = [Solution(reseau_telecom) for i in range(POPULATION_SIZE)]
+    agents_list_with_scores  = []
+    for sol in agents_list:
+        observation,reward, done, info = reseau_telecom.step(sol)
+
+    #Evaluate

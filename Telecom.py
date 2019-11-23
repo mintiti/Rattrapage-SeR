@@ -9,6 +9,7 @@ from Environnement import ReseauTelecom
 from Agents import Solution
 from math import sqrt
 import numpy as np
+import matplotlib
 
 
 class TelecomEnv(gym.Env):
@@ -32,7 +33,9 @@ class TelecomEnv(gym.Env):
 
     def __init__(self, nb_steiner=6, nb_targetNode=5, nb_clients=8, grid_size=(10, 10)):
         """
-        Initialise le Réseau telkecom aléatoirement uniformement sur la grille
+        Initialise le Réseau telecom aléatoirement uniformement sur la grille
+        Attributs :
+            - reseau_telecom : type ReseauTelecom, reseau Telecom que l'on cherche a optimiser
 
 
         """
@@ -90,12 +93,14 @@ class TelecomEnv(gym.Env):
         return [self.reseau_telecom, Solution.Vide(self.reseau_telecom)]
 
     def render(self, mode='human'):
-        print("Steiners : ", self.reseau_telecom.steiners)
-        print("Target Offices :", self.reseau_telecom.target_nodes)
-        print("Clients : ", self.reseau_telecom.clients)
-        print("Ring :", self.solution.Y)
-        print("C_target_steiner : \n", self.solution.X)
-        print("C_clients_target \n", self.solution.Z)
+        if mode == 'human' :
+            print("Steiners : ", self.reseau_telecom.steiners)
+            print("Target Offices :", self.reseau_telecom.target_nodes)
+            print("Clients : ", self.reseau_telecom.clients)
+            print("Ring :", self.solution.Y)
+            print("C_target_steiner : \n", self.solution.X)
+            print("C_clients_target \n", self.solution.Z)
+
 
     def close(self):
         return
@@ -171,6 +176,20 @@ def bridging_costs(solution, reseau_telecom):
 
 if __name__ == '__main__':
     env = TelecomEnv()
-    observation, reward, done, info = env.step(Solution(env.reseau_telecom))
-    print(reward)
+    sol1 = Solution(env.reseau_telecom)
+    sol2 = Solution(env.reseau_telecom)
+    observation1, reward1, done1, info1 = env.step(sol1)
     env.render()
+    print('1:' ,reward1)
+    observation2, reward2, done2, info2 = env.step(sol2)
+    env.render()
+    print("2", reward2)
+    enfant1, enfant2 = sol1.croisement(sol2)
+    _, re3, _, _ = env.step(enfant1)
+    env.render()
+    print("enafant 1 :" , re3)
+    _, re4, _, _ = env.step(enfant2)
+    env.render()
+    print("enafant 2 :", re4)
+
+

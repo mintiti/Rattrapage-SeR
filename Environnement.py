@@ -29,6 +29,7 @@ class ReseauTelecom:
         """
 
         (x, y) = grid_size
+        self.grid_size = grid_size
         self.steiners = [(random.uniform(0, x), random.uniform(0, y)) for i in range(nb_steiner)]
         self.nb_steiner = nb_steiner
 
