@@ -42,7 +42,7 @@ def cout_steiner(reseau_telecom):
 def cout_target_steiner(reseau_telecom):
     """
     Calcule les link costs des target nodes aux steiner nodes
-    :param reseau_telecom: le reseau telecom qui nous interesse
+    :param reseau_telecom: le reseau reseau_telecom qui nous interesse
     :return: C = [c_ij] où c_ij est le cout de connection du target node i au steiner node j
     """
     nb_steiner = reseau_telecom.nb_steiner

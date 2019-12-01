@@ -1,198 +1,78 @@
-import pygame
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+from config import cfg
 
-# CONSTANTS :
-WHITE = (255,255,255)
-BLACK = (0,0,0)
-R = (255,0,0)
-G = (0,255,0)
-B = (0,0,255)
+# Constants
+SMALL_DATA_INSTANCE = 'InputDataTelecomSmallInstance.xlsx'
+LARGE_DATA_INSTANCE = "InputDataTelecomLargeInstance.xlsx"
+# Todo : add data instance
+# Todo : add best score obtained
+# Todo : name based on XXX
 
-STEINER_SIZE = (32,32)
-DISPLAY_SIZE = (1920,1080)
-GRID_UPSCALE_FACTOR = 100
-#Rescaling constant
-
-successes, failures = pygame.init()
-print("{0} successes and {1} failures".format(successes, failures))
-
-screen = pygame.display.set_mode(DISPLAY_SIZE)
-pygame.display.set_caption('Rattrapage SeR')
-clock = pygame.time.Clock()
-FPS = 60  # Frames per second.
-
-#Helper Functions
-def upscale(coordinates):
-    (x,y) = coordinates
-    return (x * GRID_UPSCALE_FACTOR, y * GRID_UPSCALE_FACTOR)
-#Graph object surfaces
-class Clients :
-    def __init__(self,position):
-        self.image = pygame.Surface(STEINER_SIZE, pygame.SRCALPHA)
-        self.rect = pygame.draw.polygon(self.image,WHITE,[(0,STEINER_SIZE[0]), (STEINER_SIZE[0], STEINER_SIZE[0]), (STEINER_SIZE[0] //2,0)])
-        self.rect.center = position
-
-
-
-class Steiner :
-    def __init__(self,position):
-        self.image = pygame.Surface(STEINER_SIZE)
-        self.image.fill(WHITE)
-        self.rect = pygame.Rect(position,STEINER_SIZE)
-        self.rect.center = position
-
-class EndOffices :
-    def __init__(self,position):
-        radius = round(STEINER_SIZE[0] / 2)
-        self.position = position
-        self.image = pygame.Surface(STEINER_SIZE, pygame.SRCALPHA)
-        self.rect = pygame.draw.circle(self.image,WHITE,(radius,radius),radius)
-        self.rect.center = self.position
-
-    def draw(self,screen):
-        screen.blit(self.image, self.rect)
-
-
-    def move_up(self):
-        self.position = (self.position[0],self.position[1]-1)
-
-    def move_down(self):
-        self.position = (self.position[0],self.position[1] + 1)
-
-    def move_right(self):
-        self.position = (self.position[0] + 1,self.position[1])
-
-    def move_left(self):
-        self.position = (self.position[0] -1,self.position[0])
-
-class Background :
-    def __init__(self, env):
+class Display :
+    def __init__(self,genetic,data_instance):
         """
-        à appeler pour recuperer l'image du background
-        :param env: l'environnement pour lequel on desisne l'image
+        Initializes the fig to animate
+        genetic should be evaluated at least once
+        :param genetic:
         """
-        self.reseau_telecom = env.reseau_telecom
-        (x,y) = self.reseau_telecom.grid_size
-        self.image = pygame.Surface((x*100, y*100))
-        self.image.fill(BLACK)
-        bounding_box = self.image.get_bounding_rect()
-        pygame.draw.rect(self.image , R, bounding_box, 1)
+        self.data = data_instance
+        #Initialize the figure to draw on
+        self.fig = plt.figure()
 
-        #draw the steiner nodes
-        self.list_steiners = []
+        # Create text ax
+        self.text_ax = self.fig.add_subplot(311)
+        self.text_ax.set_title('Simulation constants')
+        self.text_ax.get_xaxis().set_visible(False)
+        self.text_ax.get_yaxis().set_visible(False)
+        self._create_text_ax()
 
-        for steiner in self.reseau_telecom.steiners :
-            self.list_steiners.append(Steiner(upscale(steiner)))
+        # Create the history of best scores by generation ax
+        self.history_ax = self.fig.add_subplot(312)
+        self.history_ax.set_xlabel('Generation')
+        self.history_ax.plot(range(len(genetic.current_best_list)),[generations_best[1] for generations_best in genetic.current_best_list])
 
-        for s in self.list_steiners :
-            self.image.blit(s.image,s.rect)
+        self.best_score = self.fig.add_subplot(313)
+        self.best_score.get_xaxis().set_visible(False)
+        self.best_score.get_yaxis().set_visible(False)
+        self.best_score.text(0.1,0,"Best score obtained is {0} in {1} generations".format(genetic.current_best[1], genetic.generation_counter))
 
-        #draw the end offices
-        self.list_end_offices = []
 
-        for end in self.reseau_telecom.target_nodes :
-            coordinate = (end[0] * 100 , end[1] * 100)
-            self.list_end_offices.append(EndOffices(coordinate))
-        for end in self.list_end_offices :
-            end.draw(self.image)
+    def _create_text_ax(self):
+        string = None
+        if self.data == SMALL_DATA_INSTANCE :
+            string = "Data instance : Small\n"
+        else :
+            string = "Data instance : Large\n"
+        for key in cfg.keys():
+            string += "{0} : {1}".format(key, cfg[key]) + "\n"
+        self.text_ax.text(0.1,0,string)
 
-        #draw the clients
-        self.list_clients = []
-        for client in self.reseau_telecom.clients :
-            coordinate = (client[0] * 100, client[1] * 100)
-            self.list_clients.append(Clients(coordinate))
-        for client in self.list_clients :
-            self.image.blit(client.image, client.rect)
-class Lines :
-    def __init__(self,agent,telecom):
-        """
+    def update(self,genetic):
+        self.history_ax.plot([i+1 for i in range(len(genetic.current_best_list))] ,[generations_best[1] for generations_best in genetic.current_best_list])
 
-        :param agent: la solution pour laquelle on dessine
-        :param telecom : juste l'environnement, sans la solution type ReseauTelecom
-        """
-        # Unpack solution
-        C_target_steiner = agent.X
-        C_client_target = agent.Z
-        cycle_steiner = agent.Y
-        print(cycle_steiner)
+    def save(self,name):
+        plt.savefig(name)
+        print('saved as ', name )
 
-        # Unpack telecom
-        (x,y) = telecom.grid_size
-        steiners = telecom.steiners
-        target_nodes = telecom.target_nodes
-        clients = telecom.clients
-
-        # Initialize the pygame.Surface
-        self.image = pygame.Surface((x*GRID_UPSCALE_FACTOR, y* GRID_UPSCALE_FACTOR), pygame.SRCALPHA)
-        #draw the lines between the steiner nodes
-        for i in range(len(cycle_steiner) -1):
-            pos1 = upscale(steiners[cycle_steiner[i]])
-            pos2 = upscale(steiners[cycle_steiner[i+1]])
-            pygame.draw.line(self.image, WHITE, pos1,pos2)
-        pos1 = upscale(steiners[cycle_steiner[0]])
-        pos2 = upscale(steiners[cycle_steiner[-1]])
-        pygame.draw.line(self.image,WHITE,pos1,pos2)
-
-        #draw the lines between the clients and the end offices
-        (m,n) = C_client_target.shape
-        for i in range(m) :
-            for j in range(n):
-                #regarder si le client est connecté au target
-                if C_client_target[i,j]:
-                    pos1 = upscale(clients[i])
-                    pos2 = upscale(target_nodes[j])
-                    pygame.draw.line(self.image, B,pos1, pos2)
-        # draw the lines between target nodes and steiners
-        (m,n) = C_target_steiner.shape
-        for i in range(m):
-            for j in range(n):
-                if C_target_steiner[i,j]:
-                    pos1 = upscale(target_nodes[i])
-                    pos2 = upscale(steiners[j])
-                    pygame.draw.line(self.image, G,pos1,pos2)
+if __name__ == '__main__':
+    from genetic import Genetic
+    genetic = Genetic('InputDataTelecomSmallInstance.xlsx')
+    genetic.evaluate()
+    d= Display(genetic)
+    animation.FuncAnimation(d.fig,d.update,frames=genetic)
+    plt.show()
+    genetic.selection()
+    genetic.crossover()
+    genetic.mutate()
+    genetic.evaluate()
+    d.update(genetic)
+    animation.FuncAnimation(d.fig, d.update,frames=genetic)
 
 
 
+    plt.show()
 
-
-
-
-steiner = Steiner((150, 150))
-end = EndOffices((300,300))
-L = [steiner]
-client = Clients((100,100))
-# draw the steiners
-
-
-from Telecom import TelecomEnv
-from Agents import Solution
-env = TelecomEnv()
-environnement = env.reseau_telecom
-agent = Solution(environnement)
-links = Lines(agent,environnement)
-while True:
-    clock.tick(FPS)
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            quit()
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_w:
-                end.move_up()
-                #steiner.rect.move_ip(0, -2)
-            elif event.key == pygame.K_s:
-                end.move_down()
-                #steiner.rect.move_ip(0, 2)
-            elif event.key == pygame.K_a:
-                end.move_left()
-                #steiner.rect.move_ip(-2, 0)
-            elif event.key == pygame.K_d:
-                end.move_right()
-                #steiner.rect.move_ip(2, 0)
-
-    bg = Background(env)
-    screen.blit(bg.image, (0,0))
-    screen.blit(links.image, (0,0))
-
-    pygame.display.update()  # Or pygame.display.flip()
 
 

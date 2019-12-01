@@ -3,15 +3,13 @@
 
 import gym
 from gym import error, spaces, utils
-from gym.utils import seeding
 import random
-from Environnement import ReseauTelecom
+from Environnement import ReseauTelecom, ReseauTelecomFromExcel
 from Agents import Solution
 from math import sqrt
 import numpy as np
-import matplotlib
 
-
+# Class definitions
 class TelecomEnv(gym.Env):
     """
     Environnement OpenAI Gym pour le probleme de télécom
@@ -33,13 +31,13 @@ class TelecomEnv(gym.Env):
 
     def __init__(self, nb_steiner=6, nb_targetNode=5, nb_clients=8, grid_size=(10, 10)):
         """
-        Initialise le Réseau telecom aléatoirement uniformement sur la grille
+        Initialise le Réseau reseau_telecom aléatoirement uniformement sur la grille
         Attributs :
             - reseau_telecom : type ReseauTelecom, reseau Telecom que l'on cherche a optimiser
 
 
         """
-        # random initalization of the telecom network
+        # random initalization of the reseau_telecom network
         self.reseau_telecom = ReseauTelecom(nb_steiner, nb_targetNode, nb_clients, grid_size)
 
         # Pre calculate cost matrices
@@ -83,7 +81,7 @@ class TelecomEnv(gym.Env):
         cout_total_connexion_2 = self.C_steiner[self.solution.Y[0], self.solution.Y[-1]]
 
         for i in range(len(self.solution.Y) - 1):
-            #print("wqefasdgawger",self.solution.Y[i], self.solution.Y[i + 1])
+            # print("wqefasdgawger",self.solution.Y[i], self.solution.Y[i + 1])
             cout_total_connexion_2 += self.C_steiner[self.solution.Y[i], self.solution.Y[i + 1]]
         if cout_total_connexion_2 == 0:
             cout_total_connexion_2 = float('inf')
@@ -93,7 +91,7 @@ class TelecomEnv(gym.Env):
         return [self.reseau_telecom, Solution.Vide(self.reseau_telecom)]
 
     def render(self, mode='human'):
-        if mode == 'human' :
+        if mode == 'human':
             print("Steiners : ", self.reseau_telecom.steiners)
             print("Target Offices :", self.reseau_telecom.target_nodes)
             print("Clients : ", self.reseau_telecom.clients)
@@ -101,9 +99,72 @@ class TelecomEnv(gym.Env):
             print("C_target_steiner : \n", self.solution.X)
             print("C_clients_target \n", self.solution.Z)
 
-
     def close(self):
         return
+
+class TelecomEnvFromExcel(gym.Env):
+    """
+    Telecom Environment, but for extracting input data from an excel file
+
+    """
+    metadata = {'render.modes': ['human']}
+
+    def __init__(self,excel):
+        self.reseau_telecom = ReseauTelecomFromExcel(excel)
+        self.solution = Solution.Vide(self.reseau_telecom)
+
+    def _cout_total(self):
+        #TODO : Verify that the solutions are not empty
+        solution = self.solution
+        reseau_telecom = self.reseau_telecom
+        nb_steiner = self.reseau_telecom.nb_steiner
+        nb_target = self.reseau_telecom.nb_targetNode
+        nb_client = self.reseau_telecom.nb_client
+        # Calculate Total  Allocation  Cost :
+        # is the sum of the costs for allocating customers to  the  end  offices
+        # PLUS  the  sum  of  the  costs  for  allocating  the  endoffices to the digital hubs
+        allocation_cost = 0
+        for client in range(nb_client):
+            for target in range(nb_target):
+                allocation_cost += reseau_telecom.C_cust_target[client,target] * solution.Z[client,target]
+        for target in range(nb_target):
+            for steiner in range(nb_steiner):
+                nb_connections_to_target = sum(solution.Z[:,target])
+                allocation_cost += reseau_telecom.C_target_steiner[target,steiner] * solution.X[target,steiner] * nb_connections_to_target
+
+        # Calculate Total  Selection  Cost:
+        # is  the  sum  of  the  costs  for  locating  (selecting) digital hubs
+        selection_cost = 0
+        for steiner in solution.Y :
+            selection_cost += reseau_telecom.steiner_fixed_cost[steiner]
+        # Total  Connection  Cost:
+        # is  the  sum  of  the  costs  for  connecting  digital hubs
+        total_connection_cost = reseau_telecom.C_steiner_steiner[solution.Y[0], solution.Y[-1]]
+        for i in range(len(solution.Y)-1) :
+            total_connection_cost += reseau_telecom.C_steiner_steiner[solution.Y[i], solution.Y[i+1]]
+
+        return allocation_cost + selection_cost + total_connection_cost
+
+
+    def step(self, solution):
+        self.solution = solution
+        observation = [self.reseau_telecom,self.solution]
+        reward = self._cout_total()
+        done= True
+        info = dict()
+        return observation, reward, done, info
+
+    def render(self, mode='human'):
+        #TODO : write the render for excel extraction
+        return
+
+    def close(self):
+        pass
+
+
+
+
+
 
 
 # Cost functions
@@ -145,7 +206,7 @@ def cout_steiner(reseau_telecom):
 def cout_target_steiner(reseau_telecom):
     """
     Calcule les link costs des target nodes aux steiner nodes
-    :param reseau_telecom: le reseau telecom qui nous interesse
+    :param reseau_telecom: le reseau reseau_telecom qui nous interesse
     :return: C = [c_ij] où c_ij est le cout de connection du target node i au steiner node j
     """
     nb_steiner = reseau_telecom.nb_steiner
@@ -180,16 +241,14 @@ if __name__ == '__main__':
     sol2 = Solution(env.reseau_telecom)
     observation1, reward1, done1, info1 = env.step(sol1)
     env.render()
-    print('1:' ,reward1)
+    print('1:', reward1)
     observation2, reward2, done2, info2 = env.step(sol2)
     env.render()
     print("2", reward2)
     enfant1, enfant2 = sol1.croisement(sol2)
     _, re3, _, _ = env.step(enfant1)
     env.render()
-    print("enafant 1 :" , re3)
+    print("enafant 1 :", re3)
     _, re4, _, _ = env.step(enfant2)
     env.render()
     print("enafant 2 :", re4)
-
-
