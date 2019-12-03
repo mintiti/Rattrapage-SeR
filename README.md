@@ -28,4 +28,6 @@ Dans un invité de commande dans le dossier du projet:
   - arreter l'algorithme et sortir le fichier matlplotlib.
     Par défaut le fichier s'appelle genetic.png
     
-    
+  Meilleurs scores trouvés  :
+  Petite instance : 6763
+  Grande instance : 12480
