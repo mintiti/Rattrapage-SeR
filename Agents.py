@@ -24,6 +24,7 @@ class Solution:
         - X : matrice [x_ij] qui vaut 1 si et seulement si le target node i est lié au steiner node j
         - Y : liste [Y_j] qui decrit le traveling salesman sur les steiner nodes
         - Z : matrice [z_ki] qui vaut 1 si et seulement si le client k est lié au target node i
+    Contient les fonctions de mutation et crossover des agents
     """
 
     # Validity check functions
@@ -144,8 +145,9 @@ class Solution:
         tries_counter = 0
         valid_childrens = False
         while not valid_childrens:
-            print('tentative crossover clients', tries_counter)
+            #print('tentative crossover clients', tries_counter)
             if tries_counter < 100:
+                tries_counter+=1
                 # selectionner ce nombre de client
                 list_crossover = rd.sample(range(0, nb_clients), nb_crossover)
                 # echanger les connexions de ces clients
@@ -162,6 +164,7 @@ class Solution:
 
                 valid_childrens = enfant_1.valide() and enfant_2.valide()
             else:
+                return deepcopy(self), deepcopy(sol)
                 break
 
             tries_counter += 1
@@ -210,19 +213,28 @@ class Solution:
 
     # TODO : mettre des anti blocage de mutation
     def _mutation_client_target(self):
+        original = self.Z.copy()
         client_mute = rd.randint(0, self.nb_client - 1)
         mutation_valide = False
+        tries_counter = 0
         while not mutation_valide:
-            nouvelle_target = rd.randint(0, self.nb_target - 1)
-            print('recherche nouvelle target', nouvelle_target)
-            for i in range(self.nb_target):
-                if i == nouvelle_target:
-                    self.Z[client_mute, i] = 1
-                else:
-                    self.Z[client_mute, i] = 0
-            mutation_valide = self.valide()
+            if tries_counter <200 :
+                tries_counter +=1
+                nouvelle_target = rd.randint(0, self.nb_target - 1)
+            #print('recherche nouvelle target', nouvelle_target)
+                for i in range(self.nb_target):
+                    if i == nouvelle_target:
+                        self.Z[client_mute, i] = 1
+                    else:
+                        self.Z[client_mute, i] = 0
+                mutation_valide = self.valide()
+            else :
+                self.Z = original
+                mutation_valide = self.valide()
+                break
 
     # TODO : Prendre seulement les steiners actives
+    # TODO : probleme de boucle infinie
     def _mutation_target_steiner(self):
         original = self.X.copy()
         target_mute = rd.randint(0, self.nb_target - 1)
@@ -230,9 +242,9 @@ class Solution:
         tries_counter = 0
         while not mutation_valide:
             # choisir le nouveau steiner auquel se connecter
-            if tries_counter < 1000:
+            if tries_counter < 200:
                 nouveau_steiner = self.Y[rd.randint(0, len(self.Y) - 1)]
-                print('recherche nouveau steiner :', nouveau_steiner, 'Essai numéro', tries_counter)
+                #print('recherche nouveau steiner :', nouveau_steiner, 'Essai numéro', tries_counter)
                 tries_counter += 1
                 for i in range(self.nb_steiner):
                     if i == nouveau_steiner:
@@ -242,6 +254,7 @@ class Solution:
                 mutation_valide = self.valide()
             else:
                 # Don't mutate
+                mutation_valide = False
                 self.X = original
                 break
 

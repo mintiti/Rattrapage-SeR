@@ -117,7 +117,7 @@ Best solution found :
                    self.current_best[0].Y,
                    self.current_best[0].X,
                    self.current_best[0].Z))
-
+    @classmethod
     def render_initial(self):
         print( 'Initializing the problem with parameters ', cfg)
 
@@ -141,8 +141,8 @@ if __name__ == '__main__':
     ok_input = False
     while not ok_input:
         if data_key == 's' :
+            Genetic.render_initial()
             genetic = Genetic(SMALL_DATA_INSTANCE)
-            genetic.render_initial()
             ok_input = True
         elif data_key == 'l':
             genetic = Genetic(LARGE_DATA_INSTANCE)
@@ -162,7 +162,7 @@ if __name__ == '__main__':
             # Output results to an image
             data_instance = SMALL_DATA_INSTANCE if data_key == 's' else LARGE_DATA_INSTANCE
             figure = Display(genetic,data_instance)
-            figure.save("test.png")
+            figure.save("genetic.png")
             break
 
         elif input_key == 'g' :
@@ -172,14 +172,14 @@ if __name__ == '__main__':
             genetic.evaluate()
             genetic.render()
         elif input_key == 'c':
-            for i in tqdm(range(1000), unit= 'generation'):
-                print('s')
+            for i in tqdm(range(100), unit= 'generation'):
+                #print('s')
                 genetic.selection()
-                print('c')
+                #print('c')
                 genetic.crossover()
-                print('m')
+                #print('m')
                 genetic.mutate()
-                print('eval')
+                #print('eval')
                 genetic.evaluate()
             genetic.render()
         else :
